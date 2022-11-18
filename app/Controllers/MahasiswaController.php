@@ -139,42 +139,33 @@ class MahasiswaController extends ResourceController
     public function update($id = null)
     {
         $mahasiswa = new Mahasiswa();
+        $thatMahasiswa = $mahasiswa->find($id);
         $rules = [
-            'fullname' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Nama lengkap harus diisi',
-                ],
-            ],
             'nim' => [
-                'rules' => 'required|is_unique[mahasiswa.nim,id,' . $id . ']',
+                'rules' => 'is_unique[mahasiswa.nim,id,' . $id . ']',
                 'errors' => [
-                    'required' => 'NIM harus diisi',
                     'is_unique' => 'NIM sudah terdaftar',
                 ],
             ],
             'email' => [
-                'rules' => 'required|valid_email|is_unique[mahasiswa.email,id,' . $id . ']',
+                'rules' => 'is_unique[mahasiswa.email,id,' . $id . ']',
                 'errors' => [
-                    'required' => 'Email harus diisi',
                     'valid_email' => 'Email tidak valid',
                     'is_unique' => 'Email sudah terdaftar',
                 ],
             ],
-            'user_image' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Foto harus diisi',
-                ],
-            ]
         ];
+        if(empty($thatMahasiswa)){
+            return $this->failNotFound('Mahasiswa tidak di temukan dengan id ' . $id);
+        }
         if ($this->validate($rules)) {
             $data = [
-                'fullname' => $this->request->getVar('fullname'),
-                'nim' => $this->request->getVar('nim'),
-                'email' => $this->request->getVar('email'),
-                'user_image' => $this->request->getVar('user_image'),
+                'fullname' => $this->request->getVar('fullname') ?? $thatMahasiswa['fullname'],
+                'nim' => $this->request->getVar('nim') ?? $thatMahasiswa['nim'],
+                'email' => $this->request->getVar('email') ?? $thatMahasiswa['email'],
+                'user_image' => $this->request->getVar('user_image') ?? $thatMahasiswa['user_image'],
             ];
+
             $mahasiswa->update($id, $data);
             $response = [
                 'status' => 200,
